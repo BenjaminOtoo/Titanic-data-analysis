@@ -5,17 +5,17 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 #Explore dataset
-titanic_df = pd.read_csv('train.csv')
-#print(titanic_df.head())
-#print(titanic_df.info())
+titanic = pd.read_csv('train.csv')
+#print(titanic.head())
+#print(titanic.info())
 
 #Prepare the data for model training
-titanic_df = titanic_df.drop(['PassengerId', 'Name', 'Ticket', 'Cabin', 'Embarked'], axis=1)
-titanic_df['Age'] = titanic_df['Age'].fillna(titanic_df['Age'].median())
-titanic_df['Sex'] = titanic_df['Sex'].map({'male': 0, 'female': 1})
+titanic = titanic.drop(['PassengerId', 'Name', 'Ticket', 'Cabin', 'Embarked'], axis=1)
+titanic['Age'] = titanic['Age'].fillna(titanic['Age'].median())
+titanic['Sex'] = titanic['Sex'].map({'male': 0, 'female': 1})
 
-X = titanic_df.drop('Survived', axis=1)
-y = titanic_df['Survived']
+X = titanic.drop('Survived', axis=1)
+y = titanic['Survived']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
 #Model training
@@ -25,16 +25,17 @@ logreg.fit(X_train, y_train)
 #Model evaluation
 y_pred = logreg.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
-print('Accuracy:', accuracy)
+print('Test data accuracy:', "{:.2f}%".format(accuracy * 100))
 
-#Make predictions on new data
-new_data = pd.DataFrame({
-    'Pclass': [3, 1, 1],
-    'Sex': [0, 1, 1],
-    'Age': [25, 35, 50],
-    'SibSp': [0, 1, 1],
-    'Parch': [0, 2, 2],
-    'Fare': [7.8958, 120, 120],
-})
-predictions = logreg.predict(new_data)
-print('Predictions:', predictions)
+#Make predictions on full dataset
+predictions = logreg.predict(X)
+fullaccuracy = accuracy_score(titanic['Survived'], predictions)
+print('Full dataset accuracy', '{:.2f}%'.format(fullaccuracy * 100))
+
+lived = 0
+for outcome in predictions:
+    if outcome == 1:
+        lived += 1
+
+survivors = lived / len(predictions)
+print("{:.2f}%".format(survivors * 100), 'of passengers survived')
